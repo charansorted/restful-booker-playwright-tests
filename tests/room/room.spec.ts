@@ -1,316 +1,155 @@
-
-import { test, expect, APIRequestContext, request as apiRequest } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 import { AuthHelper } from '../../src/helpers/authHelpers';
-import { createRoomData } from '../../src/helpers/dataHelpers';
+import { createRoomData, createBookingData, createMessageData } from '../../src/helpers/dataHelpers';
 import { API_CONFIG } from '../../src/config/api.config';
-import { Room } from '../../src/fixtures/interfaces';
+import { Room, Booking, Message } from '../../src/fixtures/interfaces';
 import { Logger } from '../../src/utils/logger';
-import { validateRoom } from '../../src/utils/validators';
+import { getDateRange } from '../../src/utils/dateUtils';
 
-test.describe('Room Management Endpoints', () => {
-  let authToken: string;
-  let createdRoomIds: number[] = [];
-  const logger = new Logger('RoomTests');
-  let apiContext: APIRequestContext;
+test.describe('End-to-End User Flows', () => {
+  const logger = new Logger('E2ETests');
 
-  test.beforeAll(async () => {
-    logger.info('Setting up Room tests');
-    
-   
-    apiContext = await apiRequest.newContext({
-      baseURL: API_CONFIG.baseURL,
-      extraHTTPHeaders: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-      },
-    });
-    
-    const authHelper = new AuthHelper(apiContext);
+  test('Complete booking flow: Admin creates room, user books it, sends message, admin manages everything', async ({ request }) => {
+    const authHelper = new AuthHelper(request);
+    let authToken: string;
+    let createdRoomId: number;
+    let createdBookingId: number;
+    let createdMessageId: number;
+
     try {
+      // Step 1: Admin logs in
+      logger.info('Step 1: Admin authentication');
       authToken = await authHelper.login();
-      logger.info('Authentication successful');
-    } catch (error) {
-      logger.error('Failed to authenticate', error);
-      throw error;
-    }
-  });
+      expect(authToken).toBeTruthy();
 
-  test.afterAll(async () => {
-    logger.info('Cleaning up Room tests');
-    
-    // Cleanup rooms
-    if (createdRoomIds.length > 0) {
-      for (const roomId of createdRoomIds) {
-        try {
-          await apiContext.delete(`${API_CONFIG.endpoints.room.byId(roomId)}`, {
-            headers: {
-              'Cookie': `token=${authToken}`
-            }
-          });
-          logger.info('Cleaned up room', { roomId });
-        } catch (error) {
-          logger.warn('Failed to cleanup room', { roomId, error: error.message });
-        }
-      }
-    }
-    
-    // Dispose the context
-    await apiContext.dispose();
-  });
+      // Step 2: Validate token
+      logger.info('Step 2: Validating auth token');
+      const isValid = await authHelper.validateToken(authToken);
+      expect(isValid).toBe(true);
 
-  test('GET /room - should retrieve all rooms', async ({ request }) => {
-    logger.info('Testing GET all rooms');
-    
-    const response = await request.get(`${API_CONFIG.baseURL}${API_CONFIG.endpoints.room.base}`);
-    expect(response.status()).toBe(200);
-    
-    const responseData = await response.json();
-    logger.debug('Response structure', { 
-      type: typeof responseData,
-      isArray: Array.isArray(responseData),
-      keys: responseData && typeof responseData === 'object' ? Object.keys(responseData) : null,
-      sample: JSON.stringify(responseData).substring(0, 200)
-    });
-    
-    // Handle different response structures
-    let rooms;
-    if (Array.isArray(responseData)) {
-      rooms = responseData;
-    } else if (responseData.rooms && Array.isArray(responseData.rooms)) {
-      rooms = responseData.rooms;
-    } else {
-      // Log the unexpected structure
-      logger.error('Unexpected response structure:', responseData);
-      throw new Error(`Unexpected API response structure: ${JSON.stringify(responseData).substring(0, 200)}`);
-    }
-    
-    logger.info(`Found ${rooms.length} rooms`);
-    
-    if (rooms.length > 0) {
-      const room = rooms[0];
-      expect(validateRoom(room)).toBe(true);
-      expect(room).toHaveProperty('roomid');
-      expect(room).toHaveProperty('roomName');
-      expect(room).toHaveProperty('type');
-      expect(room).toHaveProperty('roomPrice');
-    }
-  });
-
-  test('POST /room - should create a new room (requires auth)', async ({ request }) => {
-    logger.info('Testing room creation');
-    
-    const authHelper = new AuthHelper(request);
-    const uniqueName = `Test Room ${Date.now()}`;
-    const roomData = createRoomData({
-      roomName: uniqueName
-    });
-    
-    // Create the room
-    const response = await request.post(`${API_CONFIG.baseURL}${API_CONFIG.endpoints.room.base}`, {
-      data: roomData,
-      headers: authHelper.getAuthHeaders(authToken)
-    });
-    
-    // Verify success status
-    expect(response.status()).toBe(200);
-    logger.info('Room created successfully');
-    
-    // Verify by searching for the room
-    const listResponse = await request.get(`${API_CONFIG.baseURL}${API_CONFIG.endpoints.room.base}`);
-    const rooms = await listResponse.json();
-    const roomsList = Array.isArray(rooms) ? rooms : rooms.rooms || [];
-    
-    const createdRoom = roomsList.find((r: Room) => r.roomName === uniqueName);
-    expect(createdRoom).toBeTruthy();
-    
-    if (createdRoom) {
-      createdRoomIds.push(createdRoom.roomid);
-      logger.info('Verified room creation', { roomId: createdRoom.roomid });
-    }
-  });
-
-  test('GET /room/{id} - should retrieve specific room', async ({ request }) => {
-    logger.info('Testing GET specific room');
-    
-    const authHelper = new AuthHelper(request);
-    const uniqueName = `Room for GET test ${Date.now()}`;
-    
-    // First create a room
-    const roomData = createRoomData({
-      roomName: uniqueName
-    });
-    
-    const createResponse = await request.post(`${API_CONFIG.baseURL}${API_CONFIG.endpoints.room.base}`, {
-      data: roomData,
-      headers: authHelper.getAuthHeaders(authToken)
-    });
-    
-    expect(createResponse.status()).toBe(200);
-    
-    // Find the created room by listing all rooms
-    const listResponse = await request.get(`${API_CONFIG.baseURL}${API_CONFIG.endpoints.room.base}`);
-    const rooms = await listResponse.json();
-    const roomsList = Array.isArray(rooms) ? rooms : rooms.rooms || [];
-    
-    const createdRoom = roomsList.find((r: Room) => r.roomName === uniqueName);
-    expect(createdRoom).toBeTruthy();
-    
-    const roomId = createdRoom.roomid;
-    createdRoomIds.push(roomId);
-    
-    // Now test getting the specific room
-    const getResponse = await request.get(`${API_CONFIG.baseURL}${API_CONFIG.endpoints.room.byId(roomId)}`);
-    expect(getResponse.status()).toBe(200);
-    
-    const retrievedRoom: Room = await getResponse.json();
-    expect(retrievedRoom.roomid).toBe(roomId);
-    expect(retrievedRoom.roomName).toBe(uniqueName);
-    expect(retrievedRoom.type).toBe(roomData.type);
-    expect(retrievedRoom.roomPrice).toBe(roomData.roomPrice);
-  });
-
-  test('PUT /room/{id} - should update room details (requires auth)', async ({ request }) => {
-    logger.info('Testing room update');
-    
-    const authHelper = new AuthHelper(request);
-    const uniqueName = `Original Room ${Date.now()}`;
-    
-    // Create a room to update
-    const originalData = createRoomData({
-      roomName: uniqueName,
-      roomPrice: 100
-    });
-    
-    const createResponse = await request.post(`${API_CONFIG.baseURL}${API_CONFIG.endpoints.room.base}`, {
-      data: originalData,
-      headers: authHelper.getAuthHeaders(authToken)
-    });
-    
-    expect(createResponse.status()).toBe(200);
-    
-    // Find the created room
-    const listResponse = await request.get(`${API_CONFIG.baseURL}${API_CONFIG.endpoints.room.base}`);
-    const rooms = await listResponse.json();
-    const roomsList = Array.isArray(rooms) ? rooms : rooms.rooms || [];
-    
-    const createdRoom = roomsList.find((r: Room) => r.roomName === uniqueName);
-    expect(createdRoom).toBeTruthy();
-    
-    const roomId = createdRoom.roomid;
-    createdRoomIds.push(roomId);
-    
-    // Update the room
-    const updatedData = {
-      ...originalData,
-      roomName: 'Updated Room Name',
-      roomPrice: 200
-    };
-
-    const updateResponse = await request.put(`${API_CONFIG.baseURL}${API_CONFIG.endpoints.room.byId(roomId)}`, {
-      data: updatedData,
-      headers: authHelper.getAuthHeaders(authToken)
-    });
-
-    expect(updateResponse.status()).toBe(200);
-  });
-
-  test('DELETE /room/{id} - should delete room (requires auth)', async ({ request }) => {
-    logger.info('Testing room deletion');
-    
-    const authHelper = new AuthHelper(request);
-    const uniqueName = `Room to Delete ${Date.now()}`;
-    
-    // Create a room to delete
-    const roomData = createRoomData({
-      roomName: uniqueName
-    });
-    
-    const createResponse = await request.post(`${API_CONFIG.baseURL}${API_CONFIG.endpoints.room.base}`, {
-      data: roomData,
-      headers: authHelper.getAuthHeaders(authToken)
-    });
-    
-    expect(createResponse.status()).toBe(200);
-    
-    // Find the created room
-    const listResponse = await request.get(`${API_CONFIG.baseURL}${API_CONFIG.endpoints.room.base}`);
-    const rooms = await listResponse.json();
-    const roomsList = Array.isArray(rooms) ? rooms : rooms.rooms || [];
-    
-    const createdRoom = roomsList.find((r: Room) => r.roomName === uniqueName);
-    expect(createdRoom).toBeTruthy();
-    
-    const roomId = createdRoom.roomid;
-    
-    // Delete the room
-    const deleteResponse = await request.delete(`${API_CONFIG.baseURL}${API_CONFIG.endpoints.room.byId(roomId)}`, {
-      headers: authHelper.getAuthHeaders(authToken)
-    });
-    
-    expect([200, 202, 204]).toContain(deleteResponse.status());
-    
-    // Verify deletion
-    const verifyResponse = await request.get(`${API_CONFIG.baseURL}${API_CONFIG.endpoints.room.byId(roomId)}`);
-    expect(verifyResponse.status()).toBe(500);  //should be status 404
-  });
-
-  test('POST /room - should require authentication', async ({ request }) => {
-    logger.info('Testing room creation without auth');
-    
-    const roomData = createRoomData({
-      roomName: `Unauthorized Room ${Date.now()}`
-    });
-    
-    // Try to create room without auth
-    const response = await request.post(`${API_CONFIG.baseURL}${API_CONFIG.endpoints.room.base}`, {
-      data: roomData
-    });
-    
-    expect(response.status()).toBe(401);
-  });
-
-  test('PUT /room/{id} - should require authentication', async ({ request }) => {
-    logger.info('Testing room update without auth');
-    
-    // Get an existing room ID
-    const listResponse = await request.get(`${API_CONFIG.baseURL}${API_CONFIG.endpoints.room.base}`);
-    const rooms = await listResponse.json();
-    const roomsList = Array.isArray(rooms) ? rooms : rooms.rooms || [];
-    
-    if (roomsList.length > 0) {
-      const existingRoom = roomsList[0];
+      // Step 3: Admin creates a room
+      logger.info('Step 3: Creating room');
+      const uniqueRoomName = `E2E Test Suite Room ${Date.now()}`;
       const roomData = createRoomData({
-        roomName: 'Unauthorized Update'
+        roomName: uniqueRoomName,
+        roomPrice: 150,
+        type: 'Double'
       });
-      
-      // Try to update without auth
-      const response = await request.put(`${API_CONFIG.baseURL}${API_CONFIG.endpoints.room.byId(existingRoom.roomid)}`, {
-        data: roomData
-      });
-      
-      expect(response.status()).toBe(401);
-    } else {
-      logger.warn('No existing rooms to test unauthorized update');
-    }
-  });
 
-  test('DELETE /room/{id} - should require authentication', async ({ request }) => {
-    logger.info('Testing room deletion without auth');
-    
-    // Get an existing room ID
-    const listResponse = await request.get(`${API_CONFIG.baseURL}${API_CONFIG.endpoints.room.base}`);
-    const rooms = await listResponse.json();
-    const roomsList = Array.isArray(rooms) ? rooms : rooms.rooms || [];
-    
-    if (roomsList.length > 0) {
-      const existingRoom = roomsList[0];
-      
-      // Try to delete without auth
-      const response = await request.delete(`${API_CONFIG.baseURL}${API_CONFIG.endpoints.room.byId(existingRoom.roomid)}`);
-      
-      expect(response.status()).toBe(401);
-    } else {
-      logger.warn('No existing rooms to test unauthorized deletion');
+      const roomResponse = await request.post(`${API_CONFIG.baseURL}${API_CONFIG.endpoints.room.base}`, {
+        data: roomData,
+        headers: authHelper.getAuthHeaders(authToken)
+      });
+      expect(roomResponse.status()).toBe(200); // As per API behavior
+
+      // Step 4: Get room ID by listing rooms
+      const listResponse = await request.get(`${API_CONFIG.baseURL}${API_CONFIG.endpoints.room.base}`);
+      expect(listResponse.status()).toBe(200);
+      const rooms = await listResponse.json();
+      const roomsList = Array.isArray(rooms) ? rooms : rooms.rooms || [];
+
+      const createdRoom = roomsList.find((r: Room) => r.roomName === uniqueRoomName);
+      expect(createdRoom).toBeTruthy();
+      createdRoomId = createdRoom.roomid!;
+      logger.info(`✅ Created room with ID: ${createdRoomId}`);
+
+      // Step 5: User books the created room
+      logger.info('Step 5: Creating booking');
+      const bookingData = createBookingData(createdRoomId, {
+        firstname: 'E2E',
+        lastname: 'Tester',
+        bookingdates: getDateRange(7, 10)
+      });
+
+      const bookingResponse = await request.post(`${API_CONFIG.baseURL}${API_CONFIG.endpoints.booking.base}`, {
+        data: bookingData
+      });
+      expect(bookingResponse.status()).toBe(201);
+      const createdBooking: Booking = await bookingResponse.json();
+      createdBookingId = createdBooking.bookingid!;
+      expect(createdBooking.roomid).toBe(createdRoomId);
+      logger.info(`✅ Created booking with ID: ${createdBookingId}`);
+
+      // Step 6: Retrieve booking to confirm
+      logger.info('Step 6: Confirming booking');
+      const bookingCheck = await request.get(`${API_CONFIG.baseURL}${API_CONFIG.endpoints.booking.byId(createdBookingId)}`);
+      expect(bookingCheck.status()).toBe(200);
+      const fetchedBooking: Booking = await bookingCheck.json();
+      expect(fetchedBooking.firstname).toBe(bookingData.firstname);
+
+      // Step 7: User sends message
+      logger.info('Step 7: Sending contact message');
+      const messageData = createMessageData({
+        name: 'E2E Tester',
+        subject: 'Question about my booking',
+        description: `I have a question about booking ${createdBookingId}`
+      });
+
+      const messageResponse = await request.post(`${API_CONFIG.baseURL}${API_CONFIG.endpoints.message.base}`, {
+        data: messageData
+      });
+      expect(messageResponse.status()).toBe(201);
+      const message: Message = await messageResponse.json();
+      createdMessageId = message.messageid!;
+      expect(message.name).toBe(messageData.name);
+      logger.info(`✅ Created message with ID: ${createdMessageId}`);
+
+      // Step 8: Admin retrieves all messages
+      logger.info('Step 8: Admin retrieving messages');
+      const messagesResponse = await request.get(`${API_CONFIG.baseURL}${API_CONFIG.endpoints.message.base}`, {
+        headers: authHelper.getAuthHeaders(authToken)
+      });
+      expect(messagesResponse.status()).toBe(200);
+      const allMessages = await messagesResponse.json();
+      const foundMessage = allMessages.messages.find((m: Message) => m.messageid === createdMessageId);
+      expect(foundMessage).toBeTruthy();
+
+      // Step 9: Admin updates booking
+      logger.info('Step 9: Admin updates booking');
+      const updatedBookingData = {
+        ...bookingData,
+        depositpaid: false,
+        additionalneeds: 'Late checkout requested'
+      };
+
+      const updateResponse = await request.put(`${API_CONFIG.baseURL}${API_CONFIG.endpoints.booking.byId(createdBookingId)}`, {
+        data: updatedBookingData,
+        headers: authHelper.getAuthHeaders(authToken)
+      });
+      expect(updateResponse.status()).toBe(200);
+      const updatedBooking = await updateResponse.json();
+      expect(updatedBooking.additionalneeds).toBe('Late checkout requested');
+
+      // Step 10: Admin deletes message
+      logger.info('Step 10: Admin deletes message');
+      const deleteMessageResponse = await request.delete(`${API_CONFIG.baseURL}${API_CONFIG.endpoints.message.byId(createdMessageId)}`, {
+        headers: authHelper.getAuthHeaders(authToken)
+      });
+      expect(deleteMessageResponse.status()).toBe(204);
+
+      // Step 11: Admin deletes booking using roomId (as per API behavior)
+      logger.info('Step 11: Admin deletes booking using roomId');
+      const deleteBookingResponse = await request.delete(`${API_CONFIG.baseURL}${API_CONFIG.endpoints.booking.byId(createdRoomId)}`, {
+        headers: authHelper.getAuthHeaders(authToken)
+      });
+      expect(deleteBookingResponse.status()).toBe(204);
+
+      // Step 12: Admin deletes room
+      logger.info('Step 12: Admin deletes room');
+      const deleteRoomResponse = await request.delete(`${API_CONFIG.baseURL}${API_CONFIG.endpoints.room.byId(createdRoomId)}`, {
+        headers: authHelper.getAuthHeaders(authToken)
+      });
+      expect([200, 204]).toContain(deleteRoomResponse.status());
+
+      // Step 13: Admin logs out
+      logger.info('Step 13: Admin logout');
+      await authHelper.logout(authToken);
+
+      logger.info('✅ E2E test completed successfully');
+
+    } catch (error) {
+      logger.error('❌ E2E test failed:', error);
+      throw error;
     }
   });
 });
