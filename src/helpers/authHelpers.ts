@@ -1,7 +1,7 @@
 import { API_CONFIG } from "@config/api.config";
 import { TEST_CONFIG } from "@config/test.config";
 import { Auth } from "@fixtures/interfaces";
-import { APIRequestContext } from "@playwright/test";
+import { APIRequestContext, APIResponse } from "@playwright/test";
 
 export class AuthHelper {
   constructor(private request: APIRequestContext) {}
@@ -36,6 +36,16 @@ export class AuthHelper {
       }
     });
   }
+
+  async loginRaw(credentials = {
+    username: process.env.AUTH_USERNAME || 'admin',
+    password: process.env.AUTH_PASSWORD || 'password123'
+  }): Promise<APIResponse> {
+    return await this.request.post('/auth/login', {
+      data: credentials
+    });
+  }
+
 
   async validateToken(token: string): Promise<boolean> {
     const validateUrl = `${API_CONFIG.baseURL}${API_CONFIG.endpoints.auth.validate}`;

@@ -11,6 +11,12 @@
     "test:e2e": "playwright test tests/api/e2e",
     "test:headed": "playwright test --headed",
     "test:debug": "playwright test --debug",
+    "test:ui": "playwright test --config=playwright-ui.config.ts",
+    "test:ui:headed": "playwright test --config=playwright-ui.config.ts --headed",
+    "test:ui:debug": "playwright test --config=playwright-ui.config.ts --debug",
+    "test:all": "npm run test:api && npm run test:ui",
+    "test:ui:smoke": "playwright test --config=playwright-ui.config.ts --grep @smoke",
+    "test:ui:critical": "playwright test --config=playwright-ui.config.ts --grep @critical",
     "report": "playwright show-report"
   },
   "devDependencies": {

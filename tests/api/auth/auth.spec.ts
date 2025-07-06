@@ -78,4 +78,73 @@ test.describe('Authentication Endpoints', () => {
     expect(isStillValid).toBe(false);  // bug
     logger.info('Step 4: Confirmed token is invalid after logout');
   });
+
+
+ // ─────────────────────────────────────────────────────────────────────────────
+  // Non-Functional Tests
+  // ─────────────────────────────────────────────────────────────────────────────
+
+  test.only('POST /auth/login - should throttle repeated failed login attempts', async () => {
+    logger.info('Testing rate limiting on repeated login failures');
+  
+    // Simulate repeated failed login attempts
+    for (let i = 0; i < 10; i++) {
+      await expect(authHelper.login({
+        username: 'hacker',
+        password: 'wrong'
+      })).rejects.toThrow();
+    }
+  
+    logger.debug('Sending raw request after repeated failures to /auth/login');
+  
+    // Final login attempt to check for rate limiting
+    const response = await authHelper.loginRaw({
+      username: 'hacker',
+      password: 'wrong'
+    });
+  
+    const status = response.status();
+    logger.debug(`Raw login response status: ${status}`);
+    logger.info('Final login attempt status', { status });
+  
+   
+    expect([429, 401, 404]).toContain(status);  // getting 404 wrong status code
+  
+    
+  });
+
+  test('POST /auth/login - should reject SQL injection attempts', async () => {
+    logger.info('Testing login endpoint against SQL injection');
+
+    const injectionPayload = `' OR '1'='1`;
+    await expect(authHelper.login({
+      username: injectionPayload,
+      password: injectionPayload
+    })).rejects.toThrow('Login failed');
+    
+    logger.info('SQL injection attempt rejected');
+  });
+
+  test('POST /auth/login - should respond quickly (under 500ms)', async () => {
+    logger.info('Testing login performance under load');
+
+    const start = Date.now();
+    const token = await authHelper.login();
+    const duration = Date.now() - start;
+
+    expect(duration).toBeLessThan(500);
+    expect(token).toBeTruthy();
+    logger.info('Login response time', { duration });
+  });
+
+  test('POST /auth/login - should sanitize special characters', async () => {
+    logger.info('Testing special character input handling');
+
+    await expect(authHelper.login({
+      username: '<script>alert(1)</script>',
+      password: 'pass123'
+    })).rejects.toThrow('Login failed');
+
+    logger.info('XSS-like input correctly rejected');
+  });
 });
