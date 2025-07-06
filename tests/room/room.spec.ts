@@ -1,4 +1,4 @@
-// tests/room/room.spec.ts - Complete fixed version
+
 import { test, expect, APIRequestContext, request as apiRequest } from '@playwright/test';
 import { AuthHelper } from '../../src/helpers/authHelpers';
 import { createRoomData } from '../../src/helpers/dataHelpers';
@@ -16,7 +16,7 @@ test.describe('Room Management Endpoints', () => {
   test.beforeAll(async () => {
     logger.info('Setting up Room tests');
     
-    // Create a manual API context for beforeAll/afterAll
+   
     apiContext = await apiRequest.newContext({
       baseURL: API_CONFIG.baseURL,
       extraHTTPHeaders: {
