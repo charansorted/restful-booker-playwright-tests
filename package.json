@@ -17,7 +17,10 @@
     "test:all": "npm run test:api && npm run test:ui",
     "test:ui:smoke": "playwright test --config=playwright-ui.config.ts --grep @smoke",
     "test:ui:critical": "playwright test --config=playwright-ui.config.ts --grep @critical",
-    "report": "playwright show-report"
+    "test:ui:booking": "playwright test --config=playwright-ui.config.ts tests/ui/specs/booking.spec.ts",
+    "test:ui:validation": "playwright test --config=playwright-ui.config.ts --grep @validation",
+    "report:api": "playwright show-report playwright-report/api",
+    "report:ui": "playwright show-report playwright-report/ui"
   },
   "devDependencies": {
     "@faker-js/faker": "^9.9.0",

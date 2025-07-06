@@ -19,4 +19,10 @@ export class BasePage {
     await this.page.waitForLoadState('domcontentloaded');
     await this.page.waitForLoadState('networkidle');
   }
+
+  async scrollToElement(selector: string) {
+    const element = this.page.locator(selector);
+    await element.waitFor({ state: 'visible' });
+    await element.scrollIntoViewIfNeeded();
+  }
 }
