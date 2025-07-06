@@ -1,0 +1,11 @@
+<testsuites id="" name="" tests="1" failures="0" skipped="0" errors="0" time="0.511909">
+<testsuite name="api/hotelbook-api.spec.ts" timestamp="2025-07-05T21:10:31.879Z" hostname="api-tests" tests="1" failures="0" skipped="0" time="0.206" errors="0">
+<testcase name="Automation in Testing API - Comprehensive Test Suite › Authentication Endpoints › POST /auth/login - should authenticate with valid credentials" classname="api/hotelbook-api.spec.ts" time="0.206">
+<system-out>
+<![CDATA[Status: [33m200[39m
+Body: { token: [32m'FGJo1rdJDfBxLISV'[39m }
+]]>
+</system-out>
+</testcase>
+</testsuite>
+</testsuites>

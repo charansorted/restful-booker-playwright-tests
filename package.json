@@ -1,18 +1,23 @@
 {
-  "name": "restful-booker-playwright-tests",
+  "name": "api-test-project",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "API Test Suite for Automation in Testing",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "playwright test",
+    "test:auth": "playwright test tests/auth",
+    "test:booking": "playwright test tests/booking",
+    "test:room": "playwright test tests/room",
+    "test:message": "playwright test tests/message",
+    "test:e2e": "playwright test tests/e2e",
+    "test:headed": "playwright test --headed",
+    "test:debug": "playwright test --debug",
+    "report": "playwright show-report"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "devDependencies": {
-    "@playwright/test": "^1.53.2",
-    "@types/node": "^24.0.10",
-    "axios": "^1.10.0",
-    "typescript": "^5.8.3"
+    "@faker-js/faker": "^9.9.0",
+    "@playwright/test": "^1.40.0",
+    "@types/node": "^20.10.0",
+    "dotenv": "^16.6.1",
+    "typescript": "^5.3.0"
   }
 }
