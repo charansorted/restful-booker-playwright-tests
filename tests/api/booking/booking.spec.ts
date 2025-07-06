@@ -1,12 +1,12 @@
 
 import { test, expect, APIRequestContext, request as apiRequest } from '@playwright/test';
-import { AuthHelper } from '../../src/helpers/authHelpers';
-import { createRoomData, createBookingData } from '../../src/helpers/dataHelpers';
-import { API_CONFIG } from '../../src/config/api.config';
-import { Room, Booking } from '../../src/fixtures/interfaces';
-import { Logger } from '../../src/utils/logger';
-import { validateBooking } from '../../src/utils/validators';
-import { getDateRange } from '../../src/utils/dateUtils';
+import { AuthHelper } from '../../../src/helpers/authHelpers';
+import { createRoomData, createBookingData } from '../../../src/helpers/dataHelpers';
+import { API_CONFIG } from '../../../src/config/api.config';
+import { Room, Booking } from '../../../src/fixtures/interfaces';
+import { Logger } from '../../../src/utils/logger';
+import { validateBooking } from '../../../src/utils/validators';
+import { getDateRange } from '../../../src/utils/dateUtils';
 
 test.describe('Booking Management Endpoints', () => {
   let authToken: string;

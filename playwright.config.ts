@@ -4,7 +4,7 @@ import dotenv from 'dotenv';
 dotenv.config(); // This loads the .env file
 
 export default defineConfig({
-  testDir: './tests',
+  testDir: './tests/api',
   timeout: 30000,
   expect: {
     timeout: 5000

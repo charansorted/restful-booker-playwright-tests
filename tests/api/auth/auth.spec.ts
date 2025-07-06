@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
-import { AuthHelper } from '../../src/helpers/authHelpers';
-import { Logger } from '../../src/utils/logger';
+import { AuthHelper } from '../../../src/helpers/authHelpers';
+import { Logger } from '../../../src/utils/logger';
 
 test.describe('Authentication Endpoints', () => {
   let authHelper: AuthHelper;

@@ -4,11 +4,11 @@
   "description": "API Test Suite for Automation in Testing",
   "scripts": {
     "test": "playwright test",
-    "test:auth": "playwright test tests/auth",
-    "test:booking": "playwright test tests/booking",
-    "test:room": "playwright test tests/room",
-    "test:message": "playwright test tests/message",
-    "test:e2e": "playwright test tests/e2e",
+    "test:auth": "playwright test tests/api/auth",
+    "test:booking": "playwright test tests/api/booking",
+    "test:room": "playwright test tests/api/room",
+    "test:message": "playwright test tests/api/message",
+    "test:e2e": "playwright test tests/api/e2e",
     "test:headed": "playwright test --headed",
     "test:debug": "playwright test --debug",
     "report": "playwright show-report"

@@ -1,13 +1,13 @@
 import { test, expect } from "@playwright/test";
-import { AuthHelper } from "../../src/helpers/authHelpers";
+import { AuthHelper } from "../../../src/helpers/authHelpers";
 import {
   createRoomData,
   createBookingData,
-} from "../../src/helpers/dataHelpers";
-import { API_CONFIG } from "../../src/config/api.config";
-import { Room, Booking, Message } from "../../src/fixtures/interfaces";
-import { Logger } from "../../src/utils/logger";
-import { getDateRange } from "../../src/utils/dateUtils";
+} from "../../../src/helpers/dataHelpers";
+import { API_CONFIG } from "../../../src/config/api.config";
+import { Room, Booking, Message } from "../../../src/fixtures/interfaces";
+import { Logger } from "../../../src/utils/logger";
+import { getDateRange } from "../../../src/utils/dateUtils";
 
 test.describe("End-to-End User Flows", () => {
   const logger = new Logger("E2ETests");
