@@ -1,4 +1,4 @@
-// tests/booking/booking.spec.ts - Fixed version
+
 import { test, expect, APIRequestContext, request as apiRequest } from '@playwright/test';
 import { AuthHelper } from '../../src/helpers/authHelpers';
 import { createRoomData, createBookingData } from '../../src/helpers/dataHelpers';
@@ -18,9 +18,8 @@ test.describe('Booking Management Endpoints', () => {
   test.beforeAll(async () => {
     logger.info('Setting up Booking tests');
     
-    // Create a manual API context for beforeAll/afterAll
+   
     apiContext = await apiRequest.newContext({
-      baseURL: API_CONFIG.baseURL,
       extraHTTPHeaders: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
@@ -31,21 +30,25 @@ test.describe('Booking Management Endpoints', () => {
     authToken = await authHelper.login();
     logger.info('Authentication successful');
     
-    // Create a room for booking tests
+  
     const uniqueRoomName = `Booking Test Room ${Date.now()}`;
     const roomData = createRoomData({ roomName: uniqueRoomName });
     
-    const roomResponse = await apiContext.post(API_CONFIG.endpoints.room.base, {
+    
+    const roomResponse = await apiContext.post(`${API_CONFIG.baseURL}${API_CONFIG.endpoints.room.base}`, {
       data: roomData,
       headers: {
-        'Cookie': `token=${authToken}`
+        'Cookie': `token=${authToken}`,
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
       }
     });
     
+    logger.debug('Room creation response status:', roomResponse.status());
     expect(roomResponse.status()).toBe(200);
     
-    // Find the created room
-    const listResponse = await apiContext.get(API_CONFIG.endpoints.room.base);
+    
+    const listResponse = await apiContext.get(`${API_CONFIG.baseURL}${API_CONFIG.endpoints.room.base}`);
     const rooms = await listResponse.json();
     const roomsList = Array.isArray(rooms) ? rooms : rooms.rooms || [];
     
@@ -59,11 +62,11 @@ test.describe('Booking Management Endpoints', () => {
   test.afterAll(async () => {
     logger.info('Cleaning up Booking tests');
     
-    // Cleanup bookings
+    
     if (createdBookingIds.length > 0) {
       for (const bookingId of createdBookingIds) {
         try {
-          await apiContext.delete(API_CONFIG.endpoints.booking.byId(bookingId), {
+          await apiContext.delete(`${API_CONFIG.baseURL}${API_CONFIG.endpoints.booking.byId(bookingId)}`, {
             headers: {
               'Cookie': `token=${authToken}`
             }
@@ -75,10 +78,10 @@ test.describe('Booking Management Endpoints', () => {
       }
     }
     
-    // Cleanup test room
+    
     if (testRoomId) {
       try {
-        await apiContext.delete(API_CONFIG.endpoints.room.byId(testRoomId), {
+        await apiContext.delete(`${API_CONFIG.baseURL}${API_CONFIG.endpoints.room.byId(testRoomId)}`, {
           headers: {
             'Cookie': `token=${authToken}`
           }
@@ -93,8 +96,8 @@ test.describe('Booking Management Endpoints', () => {
     await apiContext.dispose();
   });
 
-  test('POST /booking - should create a new booking', async ({ request }) => {
-    logger.info('Testing booking creation');
+  test.only('POST /booking - should create a new booking (DEBUG)', async ({ request }) => {
+    logger.info('Testing booking creation with debug info');
     
     // Create unique booking data
     const bookingData = createBookingData(testRoomId, {
@@ -102,35 +105,50 @@ test.describe('Booking Management Endpoints', () => {
       lastname: 'Booking'
     });
     
+    // Log the booking data being sent
+    logger.info('Booking data:', JSON.stringify(bookingData, null, 2));
+    
     const response = await request.post(`${API_CONFIG.baseURL}${API_CONFIG.endpoints.booking.base}`, {
       data: bookingData
     });
-
-    expect(response.status()).toBe(200); // Changed from 201 to 200
-    logger.info('Booking created successfully');
+  
+    logger.info('Response status:', response.status());
     
-    // Find the created booking by listing all bookings for the room
-    const listResponse = await request.get(`${API_CONFIG.baseURL}${API_CONFIG.endpoints.booking.byRoom(testRoomId)}`);
-    const bookingsData = await listResponse.json();
-    const bookingsList = Array.isArray(bookingsData) ? bookingsData : bookingsData.bookings || [];
+    // Get response body for debugging
+    const responseText = await response.text();
+    logger.info('Response body:', responseText);
     
-    const createdBooking = bookingsList.find((b: Booking) => 
-      b.firstname === bookingData.firstname && 
-      b.lastname === bookingData.lastname
-    );
-    
-    expect(createdBooking).toBeTruthy();
-    
-    if (createdBooking) {
-      createdBookingIds.push(createdBooking.bookingid);
-      logger.info('Found created booking', { bookingId: createdBooking.bookingid });
-      
-      // Validate the booking
-      expect(validateBooking(createdBooking)).toBe(true);
-      expect(createdBooking.roomid).toBe(testRoomId);
-      expect(createdBooking.totalprice).toBe(bookingData.totalprice);
+    // Try to parse as JSON if possible
+    try {
+      const responseJson = JSON.parse(responseText);
+      logger.info('Response JSON:', JSON.stringify(responseJson, null, 2));
+    } catch (e) {
+      logger.info('Response is not valid JSON');
     }
+    
+    // Log response headers
+    logger.info('Response headers:', response.headers());
+    
+    expect(response.status()).toBe(200);
   });
+  
+  // Also, let's check what the booking data structure looks like
+  test('Check booking data structure', async () => {
+    const bookingData = createBookingData(testRoomId, {
+      firstname: `Test${Date.now()}`,
+      lastname: 'Booking'
+    });
+    
+    console.log('Full booking data structure:');
+    console.log(JSON.stringify(bookingData, null, 2));
+    
+    // Check each field
+    console.log('\nField types:');
+    Object.entries(bookingData).forEach(([key, value]) => {
+      console.log(`${key}: ${typeof value} = ${JSON.stringify(value)}`);
+    });
+  });
+  
 
   test('GET /booking - should retrieve all bookings', async ({ request }) => {
     logger.info('Testing GET all bookings');

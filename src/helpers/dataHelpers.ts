@@ -18,6 +18,16 @@ export function createBookingData(roomId: number, overrides?: Partial<Booking>):
   const checkin = new Date();
   const checkout = new Date();
   checkout.setDate(checkout.getDate() + 3);
+  
+  
+  const uniqueId = Math.random().toString(36).substring(2, 9);
+  
+  
+  const email = `booking.${uniqueId}@test.com`;
+  
+  
+  const phoneBase = Math.floor(Math.random() * 900000000) + 100000000; 
+  const phone = `07${phoneBase}`;
 
   return {
     roomid: roomId,
@@ -29,8 +39,8 @@ export function createBookingData(roomId: number, overrides?: Partial<Booking>):
       checkin: checkin.toISOString().split('T')[0],
       checkout: checkout.toISOString().split('T')[0]
     },
-    email: 'test@test.com',
-    phone: '0795657788', 
+    email: email,
+    phone: phone,
     ...overrides
   };
 }
