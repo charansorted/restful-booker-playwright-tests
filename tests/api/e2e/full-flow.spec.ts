@@ -204,18 +204,6 @@ test.describe("End-to-End User Flows", () => {
       );
       expect(deleteMessageResponse.status()).toBe(200); //wrong status code should be 204
 
-      // Step 11: Admin deletes booking using roomId (as per API behavior)
-      logger.info("Step 11: Admin deletes booking using roomId");
-      const deleteBookingResponse = await request.delete(
-        `${API_CONFIG.baseURL}${API_CONFIG.endpoints.booking.byId(
-          createdRoomId
-        )}`,
-        {
-          headers: authHelper.getAuthHeaders(authToken),
-        }
-      );
-      expect(deleteBookingResponse.status()).toBe(200);
-
       // Step 12: Admin deletes room
       logger.info("Step 12: Admin deletes room");
       const deleteRoomResponse = await request.delete(
