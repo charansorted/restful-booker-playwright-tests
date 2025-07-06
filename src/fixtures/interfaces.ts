@@ -31,7 +31,9 @@ export interface Auth {
     totalprice: number;
     depositpaid: boolean;
     bookingdates: BookingDates;
-    additionalneeds?: string;
+    email?: string;          // Added email field
+    phone?: string;          // Added phone field
+   
   }
   
   export interface Message {

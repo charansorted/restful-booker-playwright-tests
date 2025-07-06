@@ -29,7 +29,8 @@ export function createBookingData(roomId: number, overrides?: Partial<Booking>):
       checkin: checkin.toISOString().split('T')[0],
       checkout: checkout.toISOString().split('T')[0]
     },
-    additionalneeds: 'Breakfast',
+    email: 'test@test.com',
+    phone: '0795657788', 
     ...overrides
   };
 }
