@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "API Test Suite for Automation in Testing",
   "scripts": {
-    "test": "playwright test",
+    "test": "npm run test:api && npm run test:ui",
     "test:auth": "playwright test tests/api/auth",
     "test:booking": "playwright test tests/api/booking",
     "test:room": "playwright test tests/api/room",

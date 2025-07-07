@@ -65,15 +65,15 @@ export class ReservationPage extends BasePage {
     this.serviceFee = page.locator('span:has-text("Service fee")').locator('..').locator('span').last();
     
     // Main booking button
-    this.reserveNowButton = page.locator('#doReservation');
+    this.reserveNowButton = page.locator('#doReservation, button:has-text("Reserve Now")').first();
     
-    // Booking form elements (in modal/next step)
+    // Booking form elements (already on the page, not in modal)
     this.bookingModal = page.locator('.modal.show, [role="dialog"]');
-    this.firstnameInput = page.locator('input[name="firstname"], input#firstname');
-    this.lastnameInput = page.locator('input[name="lastname"], input#lastname');
-    this.emailInput = page.locator('input[name="email"], input#email');
-    this.phoneInput = page.locator('input[name="phone"], input#phone');
-    this.bookButton = page.locator('button.btn-outline-primary:has-text("Book")');
+    this.firstnameInput = page.locator('input[name="firstname"], input.room-firstname');
+    this.lastnameInput = page.locator('input[name="lastname"], input.room-lastname');
+    this.emailInput = page.locator('input[name="email"], input.room-email');
+    this.phoneInput = page.locator('input[name="phone"], input.room-phone');
+    this.bookButton = page.locator('button:has-text("Reserve Now")').first(); // Same as reserveNowButton
     this.cancelButton = page.locator('button:has-text("Cancel")');
     this.confirmationModal = page.locator('.modal.show, [role="dialog"]');
     this.confirmationMessage = page.locator('.modal-body p:has-text("successfully"), .alert-success');
@@ -103,7 +103,26 @@ export class ReservationPage extends BasePage {
 
   async waitForBookingForm() {
     // Wait for either modal or form to appear
-    await this.page.waitForSelector('input[name="firstname"], .modal.show', { timeout: 10000 });
+    try {
+      // First check if a modal appears
+      await this.page.waitForSelector('.modal.show', { timeout: 5000 });
+      console.log('Booking form appeared in modal');
+    } catch {
+      // If no modal, check if we navigated to a new page with form
+      try {
+        await this.page.waitForSelector('input[name="firstname"]', { timeout: 5000 });
+        console.log('Booking form appeared on page');
+      } catch {
+        // Log current URL and page content for debugging
+        console.log('Current URL:', this.page.url());
+        console.log('Page title:', await this.page.title());
+        
+        // Take a screenshot for debugging
+        await this.page.screenshot({ path: 'booking-form-debug.png' });
+        
+        throw new Error('Booking form not found after clicking Reserve Now');
+      }
+    }
   }
 
   async fillBookingForm(data: {
@@ -112,6 +131,10 @@ export class ReservationPage extends BasePage {
     email: string;
     phone: string;
   }) {
+    // Wait a bit for form to be ready
+    await this.page.waitForTimeout(1000);
+    
+    // Try to fill the form fields
     await this.firstnameInput.fill(data.firstname);
     await this.lastnameInput.fill(data.lastname);
     await this.emailInput.fill(data.email);
@@ -119,7 +142,8 @@ export class ReservationPage extends BasePage {
   }
 
   async submitBooking() {
-    await this.bookButton.click();
+    // The Reserve Now button is the submit button for the booking form
+    await this.reserveNowButton.click();
   }
 
   async waitForConfirmation() {
