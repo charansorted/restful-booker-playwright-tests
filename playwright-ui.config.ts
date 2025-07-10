@@ -9,7 +9,7 @@ export default defineConfig({
   outputDir: './test-results/ui',
   timeout: 30000,
   retries: process.env.CI ? 2 : 1,
-  fullyParallel: true,
+  fullyParallel: false,
   workers: process.env.CI ? 1 : 4,
   
   use: {
@@ -25,8 +25,12 @@ export default defineConfig({
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
+    },
+  /*  {
+      name: 'firefox',
+      use: { ...devices['Desktop Firefox'] },
     }
-  ],
+   */],
 
   reporter: [
     ['html', { outputFolder: 'playwright-report/ui' }],

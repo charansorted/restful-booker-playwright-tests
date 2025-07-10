@@ -26,7 +26,7 @@ test.describe('Hotel Booking System - End to End Tests', () => {
         await page.getByRole('button', { name: 'Login' }).click();
         
         // Wait for admin panel to load
-        await page.waitForTimeout(2000);
+        await page.waitForTimeout(3000);
         
         await adminPage.deleteAllRooms();
         
