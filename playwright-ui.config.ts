@@ -1,4 +1,8 @@
 import { defineConfig, devices } from '@playwright/test';
+import dotenv from 'dotenv';
+
+// Load environment variables
+dotenv.config();
 
 export default defineConfig({
   testDir: './tests/ui',
@@ -9,7 +13,7 @@ export default defineConfig({
   workers: process.env.CI ? 1 : 4,
   
   use: {
-    baseURL: 'https://automationintesting.online',
+    baseURL: process.env.BASE_URL,
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',

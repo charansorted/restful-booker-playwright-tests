@@ -1,90 +1,110 @@
 import { test, expect } from '@playwright/test';
-import { HomePage } from '../pages/home.page';
-import { ReservationPage } from '../pages/reservation.page';
+import { HomePage } from '../pages/homepage';
+import { AdminPage } from '../pages/adminpage';
+import { ReservationPage } from '../pages/reservationpage';
 
-test.describe('Smoke Tests @smoke', () => {
-  test('Homepage loads with all key elements', async ({ page }) => {
-    const homePage = new HomePage(page);
-    await homePage.navigate();
-    
-    // Verify navigation
-    await expect(homePage.navBar).toBeVisible();
-    await expect(homePage.navBrand).toContainText('Shady Meadows B&B');
-    
-    // Verify hero section
-    await expect(homePage.welcomeHeading).toBeVisible();
-    await expect(homePage.heroBookNowButton).toBeVisible();
-    
-    // Verify booking section
-    await expect(homePage.bookingSection).toBeVisible();
-    await expect(homePage.checkAvailabilityButton).toBeVisible();
-    
-    // Verify rooms section
-    await expect(homePage.roomsSection).toBeVisible();
-    const roomCount = await homePage.getRoomCount();
-    expect(roomCount).toBeGreaterThanOrEqual(3); // At least 3 rooms
-    
-    // Verify at least some rooms are displayed (don't check specific names since they vary)
-    const roomTitles = await homePage.roomCards.locator('.card-title').allTextContents();
-    expect(roomTitles.length).toBeGreaterThan(0);
-    console.log('Available rooms:', roomTitles);
-    
-    // Verify contact section
-    await expect(homePage.contactSection).toBeVisible();
-    await expect(homePage.contactForm).toBeVisible();
-  });
+test.describe('Hotel Booking System - End to End Tests', () => {
+    let homePage: HomePage;
+    let adminPage: AdminPage;
+    let reservationPage: ReservationPage;
 
-  test('Can navigate to room reservation', async ({ page }) => {
-    const homePage = new HomePage(page);
-    await homePage.navigate();
-    
-    // Get the first available room instead of looking for "Single"
-    const firstRoomTitle = await homePage.roomCards.first().locator('.card-title').textContent();
-    console.log('Booking room:', firstRoomTitle);
-    
-    // Click on first room booking button
-    await homePage.bookRoomByIndex(0);
-    
-    // Should navigate to reservation page
-    await expect(page).toHaveURL(/\/reservation\/\d+/);
-    
-    const reservationPage = new ReservationPage(page);
-    
-    // Verify reservation page elements
-    await expect(reservationPage.roomTitle).toBeVisible();
-    await expect(reservationPage.calendar).toBeVisible();
-    await expect(reservationPage.priceSummary).toBeVisible();
-    await expect(reservationPage.reserveNowButton).toBeVisible();
-    
-    // Verify room price is displayed
-    const price = await reservationPage.getRoomPrice();
-    expect(price).toContain('£');
-  });
-
-  test('Contact form is functional', async ({ page }) => {
-    const homePage = new HomePage(page);
-    await homePage.navigate();
-    
-    
-    await page.evaluate(() => {
-      document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' });
+    test.beforeEach(async ({ page }) => {
+       
+        homePage = new HomePage(page);
+        adminPage = new AdminPage(page);
+        reservationPage = new ReservationPage(page);
+        
+        // Clean rooms before each test
+        await page.goto('/');
+        await page.waitForLoadState('networkidle');
+        
+        await page.getByRole('link', { name: 'Admin', exact: true }).click();
+        await page.waitForTimeout(1000);
+        
+        await page.getByRole('textbox', { name: 'Username' }).fill('admin');
+        await page.getByRole('textbox', { name: 'Password' }).fill('password');
+        await page.getByRole('button', { name: 'Login' }).click();
+        
+        // Wait for admin panel to load
+        await page.waitForTimeout(2000);
+        
+        await adminPage.deleteAllRooms();
+        
+        await page.getByRole('button', { name: 'Logout' }).click();
+        await page.waitForTimeout(1000);
     });
     
-    
-    await homePage.contactForm.waitFor({ state: 'visible' });
-    
-    // Fill contact form
-    await homePage.fillContactForm({
-      name: 'Test User',
-      email: 'test@example.com',
-      phone: '01234567890',
-      subject: 'Test Inquiry',
-      message: 'This is a test message'
+    test.afterEach(async ({ page }) => {
+       
+        await page.goto('/');
+        await page.waitForLoadState('networkidle');
+        
+        await page.getByRole('link', { name: 'Admin', exact: true }).click();
+        await page.waitForTimeout(1000);
+        
+        // Check if already logged in
+        const logoutButton = page.getByRole('button', { name: 'Logout' });
+        if (!(await logoutButton.isVisible({ timeout: 2000 }))) {
+            await page.getByRole('textbox', { name: 'Username' }).fill('admin');
+            await page.getByRole('textbox', { name: 'Password' }).fill('password');
+            await page.getByRole('button', { name: 'Login' }).click();
+            await page.waitForTimeout(2000);
+        }
+        
+        await adminPage.deleteAllRooms();
+        
+        if (await logoutButton.isVisible({ timeout: 2000 })) {
+            await page.getByRole('button', { name: 'Logout' }).click();
+        }
+        await page.waitForTimeout(1000);
     });
-    
-    // Verify form is filled
-    await expect(homePage.contactNameInput).toHaveValue('Test User');
-    await expect(homePage.contactEmailInput).toHaveValue('test@example.com');
-    await expect(homePage.contactSubmitButton).toBeEnabled();
-  });
+
+    test('@smoke Complete flow: Create Suite room and book it', async ({ page }) => {
+        // Step 1: Navigate to home page
+        await page.goto('/');
+        
+        // Step 2: Go to admin and login
+        await adminPage.adminLink.click();
+        await adminPage.login('admin', 'password');
+        
+        // Step 3: Create a Suite room with all amenities using helper method
+        await adminPage.createFullRoom('Auto', '888');
+        
+        // Step 4: Navigate back to front page
+        await adminPage.navigateToFrontPage();
+        
+        // Step 5: Book the created room (£888)
+        await homePage.bookRoomByPrice('888');
+        
+        // Step 6: Click Reserve Now
+        await reservationPage.clickReserveNow();
+        
+        // Step 7: Fill booking form
+        await reservationPage.fillBookingForm({
+            firstname: 'Auto',
+            lastname: 'Tester',
+            email: 'tester@gmail.com',
+            phone: '07923128761'
+        });
+        
+        // Step 8: Complete reservation
+        await reservationPage.submitBooking();
+        
+        // Step 9: Verify booking confirmation
+        await expect(reservationPage.bookingConfirmation).toBeVisible();
+        
+        // Step 10: Return home
+        await reservationPage.returnHome();
+        
+        // Step 11: Go back to admin
+        await adminPage.adminLink.click();
+        
+        // Step 12: Delete the created room
+        await adminPage.deleteAllRoomsWithVerification();
+
+        // Step 13: Logout
+        await adminPage.logout();
+    });
+
+   
 });

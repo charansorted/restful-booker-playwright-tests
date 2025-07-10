@@ -4,8 +4,8 @@ dotenv.config();
 export const TEST_CONFIG = {
   credentials: {
     admin: {
-      username: process.env.ADMIN_USERNAME ,
-      password: process.env.ADMIN_PASSWORD 
+      username: String (process.env.ADMIN_USERNAME ),
+      password: String (process.env.ADMIN_PASSWORD )
     }
   },
   retryConfig: {

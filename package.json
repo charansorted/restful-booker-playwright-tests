@@ -4,10 +4,10 @@
   "description": "API Test Suite for Automation in Testing",
   "scripts": {
     "test": "npm run test:api && npm run test:ui",
+    "test:api": "playwright test tests/api",
     "test:auth": "playwright test tests/api/auth",
     "test:booking": "playwright test tests/api/booking",
     "test:room": "playwright test tests/api/room",
-    "test:message": "playwright test tests/api/message",
     "test:e2e": "playwright test tests/api/e2e",
     "test:headed": "playwright test --headed",
     "test:debug": "playwright test --debug",
@@ -16,9 +16,6 @@
     "test:ui:debug": "playwright test --config=playwright-ui.config.ts --debug",
     "test:all": "npm run test:api && npm run test:ui",
     "test:ui:smoke": "playwright test --config=playwright-ui.config.ts --grep @smoke",
-    "test:ui:critical": "playwright test --config=playwright-ui.config.ts --grep @critical",
-    "test:ui:booking": "playwright test --config=playwright-ui.config.ts tests/ui/specs/booking.spec.ts",
-    "test:ui:validation": "playwright test --config=playwright-ui.config.ts --grep @validation",
     "report:api": "playwright show-report playwright-report/api",
     "report:ui": "playwright show-report playwright-report/ui"
   },

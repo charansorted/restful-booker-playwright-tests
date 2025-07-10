@@ -84,7 +84,7 @@ test.describe('Authentication Endpoints', () => {
   // Non-Functional Tests
   // ─────────────────────────────────────────────────────────────────────────────
 
-  test.only('POST /auth/login - should throttle repeated failed login attempts', async () => {
+  test('POST /auth/login - should throttle repeated failed login attempts', async () => {
     logger.info('Testing rate limiting on repeated login failures');
   
     // Simulate repeated failed login attempts
