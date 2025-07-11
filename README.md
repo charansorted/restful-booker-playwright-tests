@@ -4,20 +4,17 @@ A comprehensive test automation framework for the Restful Booker Platform using 
 
 ## 📋 Table of Contents
 
-- [Overview](#overview)
-- [Features](#features)
-- [Prerequisites](#prerequisites)
-- [Installation](#installation)
-- [Project Structure](#project-structure)
-- [Configuration](#configuration)
-- [Running Tests](#running-tests)
-- [Test Suites](#test-suites)
-- [Page Objects](#page-objects)
-- [Writing Tests](#writing-tests)
-- [CI/CD Integration](#cicd-integration)
-- [Reporting](#reporting)
-- [Troubleshooting](#troubleshooting)
-- [Contributing](#contributing)
+- [Restful Booker Playwright Tests](#restful-booker-playwright-tests)
+  - [📋 Table of Contents](#-table-of-contents)
+  - [🎯 Overview](#-overview)
+  - [✨ Features](#-features)
+  - [📦 Prerequisites](#-prerequisites)
+  - [🚀 Installation](#-installation)
+  - [⚙️ Configuration](#️-configuration)
+  - [🧪 Running Tests](#-running-tests)
+  - [📊 Test Reports](#-test-reports)
+  - [🌐 Cross Browser Support](#-cross-browser-support)
+  - [👥 Authors](#-authors)
 
 ## 🎯 Overview
 
@@ -34,7 +31,6 @@ This project provides end-to-end test automation for the Restful Booker Platform
 - **Retry Mechanism**: Automatic retry for flaky tests
 - **Multiple Reporters**: HTML, JSON, and JUnit reports
 - **Environment Configuration**: Flexible configuration via .env files
-- **CI/CD Ready**: Configured for continuous integration
 
 ## 📦 Prerequisites
 
@@ -48,33 +44,60 @@ This project provides end-to-end test automation for the Restful Booker Platform
    ```bash
    git clone git@github.com:charansorted/restful-booker-playwright-tests.git
    cd restful-booker-playwright-tests
+   ```
 
 2. **Install dependencies**
+   ```bash
    npm install
+   ```
 
-3. **Create environment file**
-   copy the contents of the file that is sent seperately along with the Email
+3. **Install Playwright browsers**
+   ```bash
+   npx playwright install
+   ```
 
-4. **Playwright Configuration**
-   UI Tests: playwright-ui.config.ts
-   API Tests: playwright-api.config.ts
+## ⚙️ Configuration
 
-5. **🧪 Running Tests**
-    npm test
-   **Run UI tests only**
+4. **Create environment file**
+   ```bash
+   # Copy the contents of the file that is sent separately along with the email
+   # to a new .env file in the project root
+   ```
+
+5. **Playwright Configuration**
+   - **UI Tests**: `playwright-ui.config.ts`
+   - **API Tests**: `playwright-api.config.ts`
+
+## 🧪 Running Tests
+
+**Run all tests**
+```bash
+npm test
+```
+
+**Run UI tests only**
+```bash
 npm run test:ui:smoke
-   **Run API tests only**
+```
+
+**Run API tests only**
+```bash
 npm run test:api
-for individual tests please refer to package.json 
+```
 
-6. **View HTML Report**
-   
-   npx playwright show-report
+For individual tests, please refer to `package.json`
 
-7. **Cross Browser Functionality**
-   compatible with Chrome and firefox, however firefox is commented out as the website is quite unstable
+## 📊 Test Reports
 
-8. 👥 Authors
+**View HTML Report**
+```bash
+npx playwright show-report
+```
 
-Charan Thotakura - CT
+## 🌐 Cross Browser Support
 
+Compatible with Chrome and Firefox. However, Firefox is commented out as the website is quite unstable.
+
+## 👥 Authors
+
+**Charan Thotakura** - CT
