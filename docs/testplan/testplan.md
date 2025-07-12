@@ -10,6 +10,7 @@
 ## 2. Test Architecture & Organization
 
 ### 2.1 Test Suite Structure
+
 ```
 tests/
 ├── api/                           # API Test Suites
@@ -23,6 +24,7 @@ tests/
 ```
 
 ### 2.2 Supporting Infrastructure
+
 ```
 src/
 ├── config/                       # Environment & Test Configurations
@@ -36,17 +38,19 @@ src/
 ### 3.1 Authentication Tests (`tests/api/auth/`)
 
 #### Test Scope
-| Test Category | Description | Priority |
-|---------------|-------------|----------|
-| Login Functionality | Auth interface validation with username/password | High |
-| Token Management | Token interface generation, validation, expiry | High |
-| Authorization | Access control using Token interface | High |
-| Session Handling | Token-based session management | Medium |
-| Rate Limiting | Throttling repeated failed login attempts | Medium |
-| Security Testing | SQL injection and XSS prevention | Medium |
-| Performance Testing | Response time validation | Medium |
+
+| Test Category       | Description                                      | Priority |
+| ------------------- | ------------------------------------------------ | -------- |
+| Login Functionality | Auth interface validation with username/password | High     |
+| Token Management    | Token interface generation, validation, expiry   | High     |
+| Authorization       | Access control using Token interface             | High     |
+| Session Handling    | Token-based session management                   | Medium   |
+| Rate Limiting       | Throttling repeated failed login attempts        | Medium   |
+| Security Testing    | SQL injection and XSS prevention                 | Medium   |
+| Performance Testing | Response time validation                         | Medium   |
 
 #### Key Test Scenarios
+
 - ✅ POST /auth/login with valid Auth credentials
 - ✅ POST /auth/login with invalid Auth credentials  
 - ✅ Validate Token interface structure and format
@@ -61,14 +65,16 @@ src/
 ### 3.2 Booking Tests (`tests/api/booking/`)
 
 #### Test Scope
-| Test Category | Description | Priority |
-|---------------|-------------|----------|
-| Booking Journey | Full Booking journey using Booking interface | High |
-| BookingDates Validation | Checkin/checkout date validation | High |
-| Room Integration | Booking-Room relationship via roomId | High |
-| Contact Details | Email/phone field validation (optional) | Medium |
+
+| Test Category           | Description                                  | Priority |
+| ----------------------- | -------------------------------------------- | -------- |
+| Booking Journey         | Full Booking journey using Booking interface | High     |
+| BookingDates Validation | Checkin/checkout date validation             | High     |
+| Room Integration        | Booking-Room relationship via roomId         | High     |
+| Contact Details         | Email/phone field validation (optional)      | Medium   |
 
 #### Key Test Scenarios
+
 - ✅ POST /booking/ with complete Booking interface data
 - ✅ GET /booking?roomid={id} to retrieve bookings by room
 - ⚠️ PUT /booking/{bookingId} requires authentication (returns 403 without auth)
@@ -82,15 +88,17 @@ src/
 ### 3.3 Room Tests (`tests/api/room/`)
 
 #### Test Scope
-| Test Category | Description | Priority |
-|---------------|-------------|----------|
-| Room Management | Room journey using Room interface | High |
-| Room Properties | roomName, type, features, roomPrice validation | High |
-| Response Structure | API response format validation | High |
-| Authorization | Authentication requirements for protected endpoints | High |
-| Data Validation | Room interface field validation | Medium |
+
+| Test Category      | Description                                         | Priority |
+| ------------------ | --------------------------------------------------- | -------- |
+| Room Management    | Room journey using Room interface                   | High     |
+| Room Properties    | roomName, type, features, roomPrice validation      | High     |
+| Response Structure | API response format validation                      | High     |
+| Authorization      | Authentication requirements for protected endpoints | High     |
+| Data Validation    | Room interface field validation                     | Medium   |
 
 #### Key Test Scenarios
+
 - ✅ GET /room/ retrieves all rooms with proper response structure handling
 - ✅ POST /room/ with complete Room interface data (requires auth)
 - ✅ GET /room/{roomId} to retrieve specific room details
@@ -107,14 +115,16 @@ src/
 ### 3.4 End-to-End API Tests (`tests/api/e2e/`)
 
 #### Test Scope
-| Test Category | Description | Priority |
-|---------------|-------------|----------|
-| Complete Workflows | Full business process using all interfaces | High |
-| Interface Integration | Cross-interface data consistency | High |
-| User Journeys | Complete scenarios with Auth → Room → Booking | High |
-| Message Integration | Contact form to Message interface flow | Medium |
+
+| Test Category         | Description                                   | Priority |
+| --------------------- | --------------------------------------------- | -------- |
+| Complete Workflows    | Full business process using all interfaces    | High     |
+| Interface Integration | Cross-interface data consistency              | High     |
+| User Journeys         | Complete scenarios with Auth → Room → Booking | High     |
+| Message Integration   | Contact form to Message interface flow        | Medium   |
 
 #### Key Test Scenarios
+
 - ✅ Auth → Room creation → Booking workflow
 - ✅ Customer: Room search → Booking creation → Confirmation
 - ✅ Admin: Auth → Room management → Booking oversight
@@ -130,6 +140,7 @@ src/
 ### 4.1 Page Object Model (`tests/ui/pages/`)
 
 #### Page Objects Structure
+
 ```typescript
 // Actual structure based on project
 ├── adminpage.ts                 # Admin dashboard and management
@@ -218,6 +229,7 @@ export interface ApiResponseT<T> {
 ```
 
 ### 5.2 Data Helpers (`src/helpers/dataHelpers.ts`)
+
 - **Test Data Generation**: Dynamic test data creation - *backlog item*
 - **Data Validation**: Input data verification - *backlog item*
 - **Cleanup Operations**: Test data management - *backlog item*
@@ -228,6 +240,7 @@ export interface ApiResponseT<T> {
 ### 6.1 Playwright Configurations
 
 #### `playwright.config.ts` - Main Configuration
+
 ```typescript
 // Key configuration areas
 - browsers: ['chromium', 'firefox', 'webkit'] - Supports only chrome at the moment as the application is unstable
@@ -238,6 +251,7 @@ export interface ApiResponseT<T> {
 ```
 
 #### `playwright-ui.config.ts` - UI-Specific Configuration
+
 ```typescript
 // UI-specific settings
 - viewport: Screen resolutions
@@ -249,12 +263,14 @@ export interface ApiResponseT<T> {
 ### 6.2 Environment Configurations (`src/config/`)
 
 #### `api.config.ts`
+
 - Base URLs for different environments
 - API endpoint configurations
 - Authentication settings
 - Rate limiting parameters
 
 #### `test.config.ts`
+
 - Test execution parameters
 - Data generation settings
 - Cleanup configurations
@@ -263,6 +279,7 @@ export interface ApiResponseT<T> {
 ## 7. Helper Functions and Utilities
 
 ### 7.1 Authentication Helpers (`src/helpers/authHelpers.ts`)
+
 ```typescript
 // Expected helper functions
 - login(username, password): Authentication
@@ -272,6 +289,7 @@ export interface ApiResponseT<T> {
 ```
 
 ### 7.2 Request Helpers (`src/helpers/requestHelpers.ts`)
+
 ```typescript
 // HTTP request utilities
 - apiGet(endpoint, headers): GET requests
@@ -283,16 +301,19 @@ export interface ApiResponseT<T> {
 ### 7.3 Utilities (`src/utils/`)
 
 #### Date Utils (`dateUtils.ts`)
+
 - Date format conversions
 - Date range validations
 - Business date calculations
 
 #### Validators (`validators.ts`)
+
 - Input data validation
 - Response data verification
 - Business rule validation
 
 #### Logger (`logger.ts`)
+
 - Test execution logging
 - Error tracking
 - Debug information capture
@@ -302,11 +323,13 @@ export interface ApiResponseT<T> {
 ### 8.1 Test Categories
 
 #### Smoke Tests
+
 ```bash
 npm run test:ui:smoke     # Critical UI functionality
 ```
 
 #### Regression Tests
+
 ```bash
 npm test                  # Full test suite
 npm run test:api         # All API tests
@@ -314,6 +337,7 @@ npm run test:ui          # All UI tests
 ```
 
 #### Parallel Execution
+
 - **API tests**: Independent parallel execution - need to set this "fullyParallel: false" to true this is coming from playwright.config.ts & playwright-ui.config.ts classes
 - **UI tests**: Browser-specific parallel execution
 - **Cross-browser**: Parallel browser testing
@@ -321,6 +345,7 @@ npm run test:ui          # All UI tests
 ## 9. Reporting and Analysis
 
 ### 9.1 Test Reports
+
 - **Playwright HTML Report**: Interactive test results
 - "report:api": "playwright show-report playwright-report/api"
 - "report:ui": "playwright show-report playwright-report/ui"
@@ -328,18 +353,21 @@ npm run test:ui          # All UI tests
 ## 10. Maintenance and Best Practices
 
 ### 10.1 Code Organization
+
 - Feature-based test organization
 - Shared utilities and helpers
 - Consistent naming conventions
 - Clear separation of concerns
 
 ### 10.2 Test Maintenance
+
 - Regular test data refresh
 - Configuration updates for environment changes
 - Page object model updates for UI changes
 - Helper function optimization
 
 ### 10.3 Quality Gates
+
 - All tests must pass before deployment
 - Code review for new test additions
 - Performance benchmarks for test execution
@@ -348,6 +376,7 @@ npm run test:ui          # All UI tests
 ## 12. Known Issues and Test Status
 
 ### 12.1 API Issues Identified
+
 - **Authentication**: Rate limiting returns 404 instead of 429
 - **Authentication**: Token remains valid after logout (security concern)
 - **Booking**: GET /booking/{bookingId} returns 405 Method Not Allowed
@@ -355,11 +384,13 @@ npm run test:ui          # All UI tests
 - **Message**: DELETE /message/{messageId} returns 200 instead of 204
 
 ### 12.2 Test Fixes Marked
+
 - `test.fixme()` used for complete auth flow test due to logout bug
 - Comments indicate expected vs actual status codes throughout test suite
 - Workarounds implemented for API inconsistencies
 
 ### 12.3 Non-Functional Test Coverage
+
 - ✅ Rate limiting tests implemented
 - ✅ Security testing (SQL injection, XSS prevention)
 - ✅ Performance testing (response time validation)
@@ -368,6 +399,7 @@ npm run test:ui          # All UI tests
 ## 13. Future Enhancements
 
 ### 13.1 Planned Improvements
+
 - Visual regression testing integration
 - Performance testing scenarios
 - Accessibility Testing

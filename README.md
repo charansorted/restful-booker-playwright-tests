@@ -18,7 +18,7 @@ A comprehensive test automation framework for the Restful Booker Platform using 
 
 ## 🎯 Overview
 
-This project provides end-to-end test automation for the Restful Booker Platform Demo (https://automationintesting.online/), covering both API and UI testing scenarios using Playwright with TypeScript.
+This project provides end-to-end test automation for the Restful Booker Platform Demo (<https://automationintesting.online/>), covering both API and UI testing scenarios using Playwright with TypeScript.
 
 ## ✨ Features
 
@@ -41,17 +41,20 @@ This project provides end-to-end test automation for the Restful Booker Platform
 ## 🚀 Installation
 
 1. **Clone the repository**
+
    ```bash
    git clone git@github.com:charansorted/restful-booker-playwright-tests.git
    cd restful-booker-playwright-tests
    ```
 
 2. **Install dependencies**
+
    ```bash
    npm install
    ```
 
 3. **Install Playwright browsers**
+
    ```bash
    npx playwright install
    ```
@@ -59,6 +62,7 @@ This project provides end-to-end test automation for the Restful Booker Platform
 ## ⚙️ Configuration
 
 4. **Create environment file**
+
    ```bash
    # Copy the contents of the file that is sent separately along with the email
    # to a new .env file in the project root
@@ -71,16 +75,19 @@ This project provides end-to-end test automation for the Restful Booker Platform
 ## 🧪 Running Tests
 
 **Run all tests**
+
 ```bash
 npm test
 ```
 
 **Run UI tests only**
+
 ```bash
 npm run test:ui:smoke
 ```
 
 **Run API tests only**
+
 ```bash
 npm run test:api
 ```
@@ -90,6 +97,7 @@ For individual tests, please refer to `package.json`
 ## 📊 Test Reports
 
 **View HTML Report**
+
 ```bash
 npx playwright show-report
 ```
